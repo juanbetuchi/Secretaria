@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Fotomatón Feria</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/estilos.css') }}">
+</head>
+<body>
+    <div class="contenedor">
+        <h1>📸 Sacate una Foto</h1>
+        <video id="video" autoplay></video>
+        <button id="capturar">Capturar Foto</button>
+        <canvas id="canvas" style="display: none;"></canvas>
+
+        <div id="seleccion-fondo" style="display: none;">
+            <h2>Elegí un Fondo</h2>
+            <div class="fondos">
+                {% for fondo in fondos %}
+                    <img src="{{ url_for('static', filename='fondos/' + fondo) }}" class="fondo" onclick="elegirFondo('{{ fondo }}')">
+                {% endfor %}
+            </div>
+        </div>
+
+        <div id="resultado" style="display: none;">
+            <h2>Tu Foto</h2>
+            <img id="foto-final" src="">
+            <p>Escaneá este QR para descargarla:</p>
+            <img id="qr" src="">
+        </div>
+    </div>
+
+    <script>
+        const fondosDisponibles = {{ fondos|tojson }};
+    </script>
+    <script src="{{ url_for('static', filename='js/camara.js') }}"></script>
+</body>
+</html>
+
+

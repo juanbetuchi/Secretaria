@@ -1,0 +1,103 @@
+const video = document.getElementById('video');
+const canvas = document.getElementById('canvas');
+const capturaBtn = document.getElementById('captura-btn');
+const seleccionarFondo = document.getElementById('seleccionar-fondo');
+const fondosDiv = document.getElementById('fondos');
+const qrDiv = document.getElementById('qr');
+const reiniciarBtn = document.getElementById('reiniciar-btn');
+
+let fotoTomada = false;
+let stream = null;
+let fotoData = null;
+
+async function iniciarCamara() {
+  try {
+    stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" } });
+    video.srcObject = stream;
+  } catch (error) {
+    alert("No se pudo acceder a la cámara. Por favor, permite el acceso.");
+    console.error(error);
+  }
+}
+
+capturaBtn.addEventListener('click', () => {
+  if (!fotoTomada) {
+    // Capturar la foto
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
+    const ctx = canvas.getContext('2d');
+    ctx.drawImage(video, 0, 0);
+    fotoData = canvas.toDataURL('image/png');
+
+    // Ocultar video y mostrar canvas con la foto
+    video.style.display = 'none';
+    canvas.style.display = 'block';
+
+    // Mostrar selector de fondos y botón de reiniciar
+    seleccionarFondo.style.display = 'block';
+    reiniciarBtn.style.display = 'inline-block';
+    capturaBtn.style.display = 'none';
+
+    fotoTomada = true;
+  }
+});
+
+reiniciarBtn.addEventListener('click', () => {
+  fotoTomada = false;
+  // Mostrar video, ocultar canvas y fondos, QR, etc.
+  video.style.display = 'block';
+  canvas.style.display = 'none';
+  seleccionarFondo.style.display = 'none';
+  fondosDiv.innerHTML = '';
+  qrDiv.innerHTML = '';
+  reiniciarBtn.style.display = 'none';
+  capturaBtn.style.display = 'inline-block';
+});
+
+function cargarFondos(fondos) {
+  fondosDiv.innerHTML = '';
+  fondos.forEach((fondo, i) => {
+    const img = document.createElement('img');
+    img.src = fondo;
+    img.className = 'fondo-thumb';
+    img.alt = `Fondo ${i + 1}`;
+    img.addEventListener('click', () => {
+      elegirFondo(fondo);
+    });
+    fondosDiv.appendChild(img);
+  });
+}
+
+async function elegirFondo(fondoPath) {
+  // Enviar la foto y el fondo seleccionado al servidor para procesar la imagen
+  const response = await fetch('/procesar', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ foto: fotoData, fondo: fondoPath })
+  });
+
+  if (response.ok) {
+    const data = await response.json();
+    // Mostrar imagen procesada y QR
+    qrDiv.innerHTML = `<p>Escaneá el QR para descargar tu foto</p><img src="${data.qr_url}" alt="QR para descargar foto" />`;
+    // Mostrar la imagen final en el canvas o reemplazar
+    const imgProcesada = new Image();
+    imgProcesada.src = data.foto_url;
+    imgProcesada.className = 'foto-final';
+    qrDiv.appendChild(imgProcesada);
+  } else {
+    alert("Error al procesar la imagen.");
+  }
+}
+
+// Iniciar cámara al cargar la página y cargar fondos disponibles
+window.onload = () => {
+  iniciarCamara();
+  cargarFondos([
+    '/static/fondos/fondo1.jpg',
+    '/static/fondos/fondo2.jpg',
+    '/static/fondos/fondo3.jpg'
+  ]);
+};
+
+
