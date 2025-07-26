@@ -50,4 +50,3 @@ if __name__ == "__main__":
     # Configura el puerto dinámico para Render
     port = int(os.environ.get('PORT', 5000))  # Usa el puerto proporcionado por Render
     app.run(host='0.0.0.0', port=port, debug=True)
-
