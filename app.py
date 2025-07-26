@@ -47,6 +47,6 @@ def fotos(filename):
     return send_from_directory(CARPETA_FOTOS, filename)
 
 if __name__ == "__main__":
-    # Configura el puerto dinámico para Render
-    port = int(os.environ.get('PORT', 5000))  # Usa el puerto proporcionado por Render
+    # Usa la variable de entorno PORT proporcionada por Render
+    port = int(os.environ.get('PORT', 5000))  # Render asigna un puerto dinámico
     app.run(host='0.0.0.0', port=port, debug=True)
